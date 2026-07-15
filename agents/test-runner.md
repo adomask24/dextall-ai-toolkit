@@ -1,6 +1,6 @@
 ---
 name: test-runner
-description: Builds PanelCalculator2 and runs its unit tests (PanelCalculatorTests, MSTest), then reports pass/fail with root-cause analysis. Use when asked to run unit tests, verify a change compiles, or diagnose a failing test.
+description: Runs the EXISTING PanelCalculator2 unit tests (PanelCalculatorTests, MSTest) and reports pass/fail with root-cause analysis, telling pre-existing failures apart from regressions. Use when asked to run or execute the unit tests, check whether they still pass, or diagnose a failing test. Does NOT write new tests — for that use the test-author agent.
 tools: Read, Grep, Glob, Bash, Edit
 ---
 

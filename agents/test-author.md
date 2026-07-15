@@ -1,6 +1,6 @@
 ---
 name: test-author
-description: Writes new unit tests for PanelCalculator2 in PanelCalculatorTests (MSTest), following the project's real conventions, then builds and runs them to confirm they compile and to report pass/fail. Use when asked to add or generate unit tests for a class or behavior.
+description: Creates NEW unit tests for PanelCalculator2 (PanelCalculatorTests, MSTest) following the project's real conventions, then runs them once to confirm they compile and pass. Use when asked to add, write, or generate a unit test for a class or behavior. To run the existing suite without writing anything, use the test-runner agent instead.
 tools: Read, Grep, Glob, Bash, Edit, Write
 ---
 
