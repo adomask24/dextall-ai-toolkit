@@ -1,54 +1,110 @@
 ---
 name: write-unit-test
-description: Conventions and templates for writing new unit tests in PanelCalculatorTests (MSTest). Use when adding tests for PanelCalculator2 logic.
+description: Conventions and a template for writing new unit tests in PanelCalculatorTests (MSTest, net48), based on the project's actual test style. Use when adding tests for PanelCalculator2.
 ---
 
 # Write a unit test — `PanelCalculatorTests`
 
-Target **pure decision logic**, not heavy geometry. Add tests under
-`C:\Projects\Dextall\PanelCalculator2\PanelCalculatorTests\`.
+Add tests under `C:\Projects\Dextall\PanelCalculator2\PanelCalculatorTests\`,
+in a folder that mirrors the area under test (e.g. `FrameProfiles\PL1\`). These
+conventions are taken from the existing tests (`PL1BoundingBoxTest`,
+`PL1FacesTest`, …) — follow them, not older docs.
 
-## Conventions
+## Conventions (as actually used)
 
-- **MSTest**: `[TestClass]` on the class, `[TestMethod]` on each test.
-- Assertions: `Assert.AreEqual`, `Assert.IsNull`, `Assert.AreSame`, etc.
-- **Namespace mirrors the folder**, e.g. a test in `PanelFrame/` uses
-  `namespace PanelCalculatorTests.PanelFrame`.
-- `Panel` and `InputData` are in the **global namespace** — do not qualify them.
+- **MSTest** with `[TestClass]` / `[TestMethod]`. Classes are `public sealed`.
+- **Do NOT** add `using Microsoft.VisualStudio.TestTools.UnitTesting;` — it is a
+  **global using** (declared in the `.csproj`). Same for the test project's other
+  implicit usings; `ImplicitUsings` is enabled.
+- **Namespace mirrors the folder**: a test in `FrameProfiles\PL1\` uses
+  `namespace PanelCalculatorTests.FrameProfiles.PL1`.
+- **Method names describe the expectation**: `Thing_Should_Be_Correct_For_X`,
+  `Must_...`. (See the note in `ProfileTUTests.cs`.)
+- **Float comparisons use a tolerance**: declare `private const double TOL = 1e-6;`
+  and use the overload `Assert.AreEqual(expected, actual, TOL, "message")`. Never
+  compare doubles for exact equality.
+- The project targets **net48** with **C# latest** — collection expressions (`[]`),
+  target-typed `new()`, and `sealed` are all in use.
 
-## What is cheap vs expensive to test
+## Fixtures
 
-- ✅ `new Panel(inputData)` is **cheap** — its constructor only creates a
-  `PanelSystemVersionSwitch` (flag-setting only, no I/O, no geometry). `PanelFrame`
-  stays `null` until populated.
-- ❌ Heavy geometry (`PinBracket`, `PinCatcher`, …) is **not** unit-test friendly.
-  Test the *decision logic* that drives geometry, not the geometry itself.
-- Private methods can be exercised via **reflection** — see
-  `AdditionalCatcherCreatorTests` for the established pattern.
+Real input is loaded from JSON copied to the output directory
+(`InputDTOs\input.json`, `InputDTOs\cornerinput.json`). The typical constructor:
+
+```csharp
+panelInputDTO = JsonConvert.DeserializeObject<PanelInputDTO>(
+        System.IO.File.ReadAllText("InputDTOs\\input.json"))
+    ?? throw new InvalidOperationException("Failed to deserialize panelInputDTO");
+CustomConfigDTO[] customConfigDTO = [];
+panelVars = new PanelGeneratorVariables(panelInputDTO, customConfigDTO);
+```
+
+`PanelGeneratorVariables(inputDTO, CustomConfigDTO[])` is the real entry object —
+it exposes computed values (e.g. `panelVars.L5_Thickness`) that tests feed into
+geometry classes. For geometry with fixed dimensions, many tests construct the
+geometry type directly with literal numbers instead of going through fixtures.
+
+## Exposing protected/internal members
+
+Geometry **is** tested here. To reach `protected` members, the established pattern
+is a small **test subclass**, not reflection:
+
+```csharp
+private sealed class PL1BoundingBoxTestVertices : PL1BoundingBox
+{
+    public PL1BoundingBoxTestVertices(PL1WorkPoints wp) : base(wp) { }
+    public Vector3d[] VerticesPublic => this.Vertices.ToArray();
+}
+```
+
+(Reflection is used in some older tests, but prefer the subclass approach.)
 
 ## Template
 
 ```csharp
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Newtonsoft.Json;
+using PanelCalculator.FrameProfiles.PL1;
+using PanelGenerator_Variables;
+using PanelGeneratorInputDTO;
+using PanelGeneratorInputDTO.CustomConfigurator;
 
-namespace PanelCalculatorTests.PanelFrame
+namespace PanelCalculatorTests.FrameProfiles.PL1
 {
     [TestClass]
-    public class MyFeatureTests
+    public sealed class MyFeatureTests
     {
-        [TestMethod]
-        public void Does_expected_thing_for_given_input()
+        private readonly PanelInputDTO panelInputDTO;
+        private readonly PanelGeneratorVariables panelVars;
+        private const double TOL = 1e-6;
+
+        public MyFeatureTests()
         {
-            var inputData = new InputData(/* minimal fixture */);
-            var panel = new Panel(inputData);   // cheap: no geometry built
+            panelInputDTO = JsonConvert.DeserializeObject<PanelInputDTO>(
+                    System.IO.File.ReadAllText("InputDTOs\\input.json"))
+                ?? throw new InvalidOperationException("Failed to deserialize panelInputDTO");
+            CustomConfigDTO[] customConfigDTO = [];
+            panelVars = new PanelGeneratorVariables(panelInputDTO, customConfigDTO);
+        }
 
-            // Act on the pure decision logic under test.
-            // For private members, reflect (see AdditionalCatcherCreatorTests).
+        [TestMethod]
+        public void Result_Should_Be_Correct_For_90_Degrees()
+        {
+            double thickness = panelVars.L5_Thickness;
+            var subject = new PL1WorkPoints(20.0, 5.15, thickness, 90.0);
 
-            Assert.AreEqual(expected, actual);
+            // Act, then assert with tolerance:
+            Assert.AreEqual(expectedX, subject.SomeValue, TOL, "SomeValue x mismatch");
         }
     }
 }
 ```
+
+## Watch out for
+
+- Two `AdditionalPinDTO` classes exist (see the `dextall-gotchas` skill) — pick the
+  right one for the DTO you're deserializing.
+- If a new test throws `NullReferenceException` in the constructor, the JSON fixture
+  probably didn't copy to output, or a required field is missing — check
+  `CopyToOutputDirectory` in the `.csproj`.
 
 Run what you wrote with the `run-unit-tests` skill.

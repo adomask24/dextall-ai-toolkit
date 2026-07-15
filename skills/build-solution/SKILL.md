@@ -30,3 +30,8 @@ Swap the path for the project you need. Most projects are **siblings** under
   duplicate copies under `Dextall-Generator-Engine\...`. The `.sln` references the
   siblings. See the `dextall-gotchas` skill.
 - A red build → stop and report the compiler errors verbatim before running tests.
+- **Before running `PanelCalculatorTests`**, make sure `PanelGeneratorInputDTO` and
+  `PanelGenerator_Variables` are built — that test project consumes them as prebuilt
+  DLLs via `HintPath` (not project references), so stale/missing DLLs cause test
+  build failures or tests running against old code. Building the whole `.sln`
+  covers this. See the `run-unit-tests` skill.
