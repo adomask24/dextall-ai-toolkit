@@ -9,7 +9,8 @@ Dextall panel generator (`C:\Projects\Dextall`). Packaged as a Claude Code
 ### Agents (`agents/`)
 | Agent | Purpose |
 |---|---|
-| `test-runner` | Builds the solution, runs unit / e2e tests, interprets failures |
+| `test-runner` | Builds `PanelCalculator2` and runs its unit tests, interprets failures |
+| `test-author` | Writes new unit tests following the project's real conventions, then runs them |
 | `code-reviewer` | Reviews a diff against Dextall conventions, gotchas and the dependency graph |
 | `doc-writer` | Writes XML doc comments, architecture docs and READMEs |
 
@@ -18,8 +19,7 @@ Dextall panel generator (`C:\Projects\Dextall`). Packaged as a Claude Code
 |---|---|---|
 | `build-solution` | testing | `dotnet build` the whole `.sln` or a single project |
 | `run-unit-tests` | testing | Run `PanelCalculatorTests` (MSTest, net48) |
-| `run-e2e-tests` | testing | Run `TestSuite` (xUnit, drives `Form1`, Excel report) |
-| `write-unit-test` | testing | Conventions for new `PanelCalculatorTests` tests |
+| `write-unit-test` | testing | Conventions & template for new `PanelCalculatorTests` tests |
 | `dotnet-conventions` | review | VB.NET vs C# idioms, per-project language map |
 | `dextall-gotchas` | review | Duplicate-folder, dual-`AdditionalPinDTO`, foundation-project traps |
 | `dependency-impact` | review | Project dependency graph & blast-radius of a change |
