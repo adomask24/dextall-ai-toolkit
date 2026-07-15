@@ -1,0 +1,6 @@
+{
+  "name": "dextall-toolkit",
+  "version": "0.1.0",
+  "description": "Agents & skills for the Dextall panel generator (testing, code review, documentation)",
+  "author": "Dextall"
+}

@@ -1,0 +1,14 @@
+{
+  "name": "dextall-ai-toolkit",
+  "owner": "dextall",
+  "metadata": {
+    "description": "Dextall in-house Claude Code agents & skills"
+  },
+  "plugins": [
+    {
+      "name": "dextall-toolkit",
+      "description": "Testing, code-review and documentation agents & skills for the Dextall panel generator",
+      "source": { "source": "relative", "path": "." }
+    }
+  ]
+}
