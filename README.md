@@ -31,9 +31,13 @@ Dextall panel generator (`C:\Projects\Dextall`). Packaged as a Claude Code
 From **any** project directory (one-time):
 
 ```
-/plugin marketplace add <your-github-org>/dextall-ai-toolkit
+/plugin marketplace add adomask24/Dextall-AI-toolkit
 /plugin install dextall-toolkit@dextall-ai-toolkit
 ```
+
+> The GitHub repo / folder is named `Dextall-AI-toolkit`, but the internal plugin
+> and marketplace identifiers must be lowercase kebab-case (Claude Code requirement)
+> — hence `dextall-toolkit@dextall-ai-toolkit` in the install command.
 
 > Once installed, the agents are available in every project via `@`-mention
 > (e.g. `@dextall-toolkit:test-runner`). Their file access is **not** limited to
